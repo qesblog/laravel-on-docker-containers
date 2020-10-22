@@ -1,0 +1,59 @@
+version: "3"
+
+services:
+  app:
+    container_name: appc
+    build: ./docker/app
+    volumes:
+      - myapp:/var/www
+      - $PWD/docker/app/migrate.sh:/opt/migrate.sh
+    depends_on:
+      - db
+    links:
+      - db
+
+  web:
+    image: nginx
+    container_name: webc
+    ports:
+      - 80:80
+    volumes:
+      - myapp:/var/www
+      - $PWD/docker/web/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+      - db
+
+  db:
+    image: mysql:8
+    container_name: dbc
+    environment:
+      MYSQL_ROOT_PASSWORD: ROOTPASSWORD
+      MYSQL_DATABASE: DATABASENAME
+      MYSQL_USER: USERNAME
+      MYSQL_PASSWORD: USERPASSWORD
+      TZ: "Asia/Tokyo"
+    volumes:
+      - $PWD/docker/db/data:/var/lib/mysql
+      - $PWD/docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
+      - $PWD/docker/db/sql:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadminc
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=dbc
+      - PMA_USER=USERNAME
+      - PMA_PASSWORD=USERPASSWORD
+    links:
+      - db
+    ports:
+      - 8080:80
+    volumes:
+      - /sessions
+
+volumes:
+  myapp:

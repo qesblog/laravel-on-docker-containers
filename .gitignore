@@ -1,0 +1,8 @@
+.DS_Store
+
+docker/db/data/*
+!docker/db/data/.gitkeep
+docker/db/log/*
+!docker/db/log/.gitkeep
+myapp/*
+!myapp/.gitkeep
